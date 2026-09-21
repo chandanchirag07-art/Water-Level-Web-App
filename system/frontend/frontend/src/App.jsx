@@ -9,7 +9,7 @@ import { Droplets, Bell, CircleCheckBig, Wifi, RefreshCw, History, Zap } from 'l
   const [lastUpdated, setLastUpdated] = useState('Connecting...');
   const [selectedTank, setSelectedTank] = useState(null); // null means show main dashboard
   // Define your backend URL (change when deploying to production)
-  const API_URL = 'https://water-level-backend-pyr6.onrender.com/api/water-levels';
+  const API_URL = 'https://water-level-backend-pyr6.onrender.com';
 
   // Function to fetch telemetry and history from backend
   const fetchData = async () => {
@@ -44,8 +44,8 @@ import { Droplets, Bell, CircleCheckBig, Wifi, RefreshCw, History, Zap } from 'l
 
   // Poll the backend API every 5 seconds automatically
   useEffect(() => {
-    fetchData('https://water-level-backend-pyr6.onrender.com/api/water-levels'); // Fetch immediately on load
-    const interval = setInterval(fetchData, 5000);
+    fetchData(); // Fetch immediately on load
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
 
