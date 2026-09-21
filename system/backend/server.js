@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3000;
  
 // Middleware to parse incoming JSON data from ESP32
 
+
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -62,7 +63,21 @@ app.get('/', (req, res) => {
  
 // 4. API POST Route (Receives data from ESP32 and saves to Cloud DB)
 
-app.post('/api/tank', async (req, res) => {
+
+const verifyApiKey = (req, res, next) => {
+  const clientKey = req.headers['x-api-key'];
+  const serverKey = process.env.API_SECRET_KEY;
+
+  if (!clientKey || clientKey !== serverKey) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Invalid or missing API Key' });
+  }
+  next();
+};
+
+
+
+app.post('/api/tank', verifyApiKey , async (req, res) => {
+
 
     try {
 
