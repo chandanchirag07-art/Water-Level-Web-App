@@ -1,11 +1,9 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Droplets, Bell, CircleCheckBig, Wifi, RefreshCw, History, Zap, UploadCloud, Home, LayoutDashboard, AlertTriangle } from 'lucide-react';
+import { Droplets, Bell, CircleCheckBig, Wifi, RefreshCw, History, Zap, UploadCloud, Home, LayoutDashboard, AlertTriangle, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
 
 export default function App() {
   // Navigation & View State
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('home'); // Default to home to showcase the new layout
   
   // Dashboard & Telemetry State
   const [slaveData, setSlaveData] = useState([]);
@@ -91,6 +89,11 @@ export default function App() {
     return 'bg-emerald-500';
   };
 
+  // Calculations for Home KPIs & Alerts
+  const totalTanks = slaveData.length > 0 ? slaveData.length : 3;
+  const onlineDevices = slaveData.length > 0 ? slaveData.length : 3;
+  const criticalAlerts = slaveData.filter(s => s.isCritical).length;
+
   return (
     <div className="flex h-screen bg-stone-50 font-sans text-stone-900 overflow-hidden">
       
@@ -102,7 +105,7 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-lg font-bold leading-tight">Water Monitor</h1>
-            <p className="text-xs text-slate-400">IoT Control Panel</p>
+            <p className="text-xs text-slate-400">ESP32 IoT Platform</p>
           </div>
         </div>
 
@@ -144,7 +147,7 @@ export default function App() {
         </nav>
 
         <div className="text-xs text-slate-500 pt-4 border-t border-slate-800 text-center">
-          v3.1 | Industrial IoT
+          v1.0 • IoT Platform
         </div>
       </div>
 
@@ -154,22 +157,183 @@ export default function App() {
         {/* Top Header */}
         <header className="bg-white border-b border-stone-200 px-8 py-4 sticky top-0 z-10 flex items-center justify-between shadow-sm">
           <h2 className="text-xl font-extrabold capitalize text-stone-900">
+            {activeTab === 'home' && 'System Overview & Monitoring'}
             {activeTab === 'dashboard' && (selectedTank ? `Tank Details: ${selectedTank}` : 'Live Tank Monitoring')}
-            {activeTab === 'home' && 'Welcome Home'}
             {activeTab === 'alerts' && 'System Alert Configurations'}
             {activeTab === 'history' && 'Complete System Event History'}
             {activeTab === 'ota' && 'Over-The-Air Firmware Updates'}
           </h2>
 
           <div className="flex items-center gap-3 text-sm bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full font-medium border border-emerald-100">
-            <Wifi className="w-4 h-4 text-emerald-600 animate-pulse" />
-            Live Sync: {lastUpdated}
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            LIVE · Updated {lastUpdated}
           </div>
         </header>
 
         {/* Tab Content Display */}
-        <main className="p-8 flex-1">
+        <main className="p-8 flex-1 max-w-7xl w-full mx-auto space-y-8">
           
+          {/* HOME TAB - RESTRUCTURED */}
+          {activeTab === 'home' && (
+            <div className="space-y-8 pb-10">
+              
+              {/* Hero Banner */}
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <h3 className="text-3xl font-extrabold text-stone-950 tracking-tight">Water Monitoring Control Center</h3>
+                  <p className="text-stone-500 mt-1">Real-time visibility into your connected water tanks and IoT devices.</p>
+                </div>
+                <div className="flex items-center gap-2 bg-stone-100 px-4 py-2.5 rounded-2xl text-xs font-semibold text-stone-700">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> System Operating Normally
+                </div>
+              </div>
+
+              {/* 4 KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+                  <div className="text-stone-500 text-xs font-semibold uppercase tracking-wider mb-1">Tanks Monitored</div>
+                  <div className="text-3xl font-extrabold text-stone-900">{totalTanks}</div>
+                  <div className="text-xs text-stone-400 mt-2">All configured tanks</div>
+                </div>
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+                  <div className="text-stone-500 text-xs font-semibold uppercase tracking-wider mb-1">Devices Online</div>
+                  <div className="text-3xl font-extrabold text-emerald-600">{onlineDevices} / {totalTanks}</div>
+                  <div className="text-xs text-stone-400 mt-2">ESP32 nodes connected</div>
+                </div>
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+                  <div className="text-stone-500 text-xs font-semibold uppercase tracking-wider mb-1">Active Alerts</div>
+                  <div className={`text-3xl font-extrabold ${criticalAlerts > 0 ? 'text-red-600' : 'text-stone-900'}`}>{criticalAlerts}</div>
+                  <div className="text-xs text-stone-400 mt-2">Requires attention</div>
+                </div>
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+                  <div className="text-stone-500 text-xs font-semibold uppercase tracking-wider mb-1">Last Data Received</div>
+                  <div className="text-xl font-bold text-stone-900 mt-1">{lastUpdated}</div>
+                  <div className="text-xs text-stone-400 mt-2">Telemetry sync active</div>
+                </div>
+              </div>
+
+              {/* System Health Card */}
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-bold text-stone-900 flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-emerald-600" /> System Health
+                  </h4>
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                    🟢 All systems operational
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                    <div className="text-xs text-stone-500 font-medium">ESP32 Nodes</div>
+                    <div className="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">● ONLINE</div>
+                  </div>
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                    <div className="text-xs text-stone-500 font-medium">API Server</div>
+                    <div className="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">● ONLINE</div>
+                  </div>
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                    <div className="text-xs text-stone-500 font-medium">MongoDB</div>
+                    <div className="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">● ONLINE</div>
+                  </div>
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                    <div className="text-xs text-stone-500 font-medium">Data Stream</div>
+                    <div className="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">● ACTIVE</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Two Column Layout: Current Overview & Attention Required */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                {/* Current Tank Overview */}
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-stone-900 mb-4">Current Tank Overview</h4>
+                    <div className="space-y-3">
+                      {slaveData.length > 0 ? (
+                        slaveData.map((tank) => (
+                          <div key={tank.id} className="flex items-center justify-between p-3.5 bg-stone-50 rounded-2xl border border-stone-100">
+                            <span className="font-semibold text-stone-800">{tank.id}</span>
+                            <span className="font-bold text-stone-900">{tank.level}%</span>
+                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${tank.isCritical ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                              {tank.status}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-stone-400">Loading tank overview...</p>
+                      )}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('dashboard')} 
+                    className="mt-6 text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 w-fit"
+                  >
+                    Open Live Dashboard <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Attention Required */}
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-stone-900 mb-4">Attention Required</h4>
+                    {criticalAlerts > 0 ? (
+                      slaveData.filter(s => s.isCritical).map(tank => (
+                        <div key={tank.id} className="p-4 bg-red-50 rounded-2xl border border-red-100 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-red-700 flex items-center gap-2">🔴 {tank.id}</span>
+                            <span className="text-xs text-red-600 font-semibold">{tank.level}% Level</span>
+                          </div>
+                          <p className="text-xs text-red-600">Tank reached high-level threshold limit.</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 text-center space-y-1">
+                        <div className="font-bold text-emerald-800">🟢 Everything looks good</div>
+                        <p className="text-xs text-emerald-600">No active tank alerts at the moment.</p>
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('dashboard')} 
+                    className="mt-6 text-sm font-semibold text-stone-600 hover:text-stone-900 flex items-center gap-1.5 w-fit"
+                  >
+                    View Status Details <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Recent Activity Section */}
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-bold text-stone-900">Recent Activity</h4>
+                  <button onClick={() => setActiveTab('history')} className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+                    View Complete History &rarr;
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {historyLogs.slice(0, 4).map((log) => (
+                    <div key={log.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-2xl border border-stone-100 text-sm">
+                      <div className="flex items-center gap-3">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                        <span className="font-medium text-stone-800">{log.slaveId} changed status to</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${log.status === 'FULL' || log.status === 'CRITICAL' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                          {log.status}
+                        </span>
+                      </div>
+                      <span className="text-xs text-stone-400 font-medium">{log.timestamp}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
           {/* DASHBOARD TAB */}
           {activeTab === 'dashboard' && (
             selectedTank ? (
@@ -265,28 +429,18 @@ export default function App() {
             )
           )}
 
-          {/* HOME TAB */}
-          {activeTab === 'home' && (
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-200">
-              <h3 className="text-2xl font-bold text-stone-900 mb-4">Water Tank IoT System Overview</h3>
-              <p className="text-stone-600 leading-relaxed">
-                Welcome to your centralized industrial monitoring dashboard. Use the sidebar to inspect live telemetry across multiple tank nodes, review event logs, configure notifications, or push remote OTA firmware updates securely to your connected ESP32 controllers.
-              </p>
-            </div>
-          )}
-
           {/* ALERTS TAB */}
           {activeTab === 'alerts' && (
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-200">
-              <h3 className="text-2xl font-bold text-stone-900 mb-4">Alert Configuration Options</h3>
-              <p className="text-stone-600 mb-6">Manage thresholds and notification triggers for critical water levels.</p>
-              <div className="space-y-4 max-w-lg">
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-200 max-w-xl">
+              <h3 className="text-2xl font-bold text-stone-900 mb-2">Alert Configuration Options</h3>
+              <p className="text-stone-500 text-sm mb-6">Manage thresholds and notification triggers for critical water levels.</p>
+              <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-200">
-                  <span className="font-medium text-stone-800">Critical High Threshold (%)</span>
+                  <span className="font-medium text-stone-800 text-sm">Critical High Threshold (%)</span>
                   <input type="number" defaultValue={90} className="w-20 p-2 border rounded-xl text-center bg-white" />
                 </div>
                 <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl border border-stone-200">
-                  <span className="font-medium text-stone-800">Buzzer Alarm Active</span>
+                  <span className="font-medium text-stone-800 text-sm">Buzzer Alarm Active</span>
                   <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600" />
                 </div>
               </div>
