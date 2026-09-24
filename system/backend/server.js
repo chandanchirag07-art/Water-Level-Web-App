@@ -8,11 +8,22 @@ const mongoose = require('mongoose');
 
 const cors = require('cors');
 
+//OTA  modules required in backend 
+
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+
 const app = express();
 
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
+
+
+
+
  
 // Middleware to parse incoming JSON data from ESP32
 
@@ -181,6 +192,45 @@ app.get('/api/logs', async (req, res) => {
         res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 });
+
+// Configure storage for firmware binaries
+
+const uploadDir = path.join(__dirname, 'firmware');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, 'latest-firmware.bin')
+});
+const upload = multer({ storage });
+
+// Track current version metadata in memory or DB
+let currentFirmwareVersion = "1.0.0";
+
+// 1. Upload new firmware from React Dashboard
+app.post('/api/firmware/upload', upload.single('firmware'), (req, res) => {
+  const { version } = req.body;
+  if (version) currentFirmwareVersion = version;
+  res.json({ success: true, message: "Firmware uploaded successfully", version: currentFirmwareVersion });
+});
+
+// 2. ESP32 checks this endpoint for updates
+app.get('/api/firmware/version', (req, res) => {
+  res.json({ version: currentFirmwareVersion });
+});
+
+// 3. ESP32 downloads the binary file from here
+app.get('/api/firmware/download', (req, res) => {
+  const filePath = path.join(uploadDir, 'latest-firmware.bin');
+  if (fs.existsSync(filePath)) {
+    res.download(filePath);
+  } else {
+    res.status(404).send("Firmware binary not found on server.");
+  }
+});
+
+
+
 
 // Start the Express server
 
